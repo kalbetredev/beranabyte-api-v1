@@ -9,6 +9,9 @@ import UserRouter from "./api/v1/routes/UserRouter";
 import AuthRouter from "./api/v1/routes/AuthRouter";
 import connectDb from "./config/database";
 import auth from "./api/v1/middlewares/auth";
+import BlogsRouter from "./api/v1/routes/BlogsRouter";
+import CommentsRouter from "./api/v1/routes/CommentsRouter";
+import RepliesRouter from "./api/v1/routes/RepliesRouter";
 
 // App Initialization
 const app: Application = express();
@@ -21,6 +24,10 @@ app.use(cors());
 // Routes
 app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/users", auth, UserRouter);
+app.use("/api/v1/blogs/:blogId/comments/:commentId/replies", RepliesRouter);
+app.use("/api/v1/blogs/:blogId/comments", CommentsRouter);
+app.use("/api/v1/blogs", BlogsRouter);
+
 app.use(invalidRoute);
 
 connectDb(MONGO_URI);
