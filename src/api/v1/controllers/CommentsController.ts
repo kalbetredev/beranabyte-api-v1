@@ -2,6 +2,7 @@ import { Response } from "express";
 import { validateComment } from "../validation/CommentValidation";
 import Comment from "../models/Comment";
 import Blog from "../models/Blog";
+import { isValidObjectId } from "mongoose";
 
 export const getComment = (req: any, res: Response) => {
   const commentId = req.params.commentId;
@@ -69,7 +70,7 @@ export const addComment = (req: any, res: Response) => {
 
   const blogId = req.params.blogId;
 
-  if (!blogId)
+  if (!isValidObjectId(blogId))
     return res.status(400).json({
       success: false,
       msg: "Invalid Blog Id",

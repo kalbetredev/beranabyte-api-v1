@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { isValidObjectId } from "mongoose";
 import Blog from "../models/Blog";
 import User from "../models/User";
 import { ADMIN_ROLE, WRITER_ROLE } from "../models/UserRoles";
@@ -25,6 +26,12 @@ export const getCategories = (req: Request, res: Response) => {
 
 export const getBlog = (req: Request, res: Response) => {
   const blogId = req.params.blogId;
+
+  if (!isValidObjectId(blogId))
+    return res.status(400).json({
+      success: false,
+      msg: "Invalid Blog Id",
+    });
 
   Blog.findById(blogId).then((blog: any) => {
     if (!blog) {

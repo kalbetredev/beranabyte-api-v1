@@ -2,11 +2,12 @@ import { Response } from "express";
 import Reply from "../models/Reply";
 import Comment from "../models/Comment";
 import { validateReply } from "../validation/ReplyValidation";
+import { isValidObjectId } from "mongoose";
 
 export const getReply = (req: any, res: Response) => {
   const replyId = req.params.replyId;
 
-  if (!replyId)
+  if (!isValidObjectId(replyId))
     return res.status(400).json({
       success: false,
       msg: "Invalid Reply Id",
@@ -69,7 +70,7 @@ export const addReply = (req: any, res: Response) => {
 
   const commentId = req.params.commentId;
 
-  if (!commentId)
+  if (!isValidObjectId(commentId))
     return res.status(400).json({
       success: false,
       msg: "Invalid Comment Id",
