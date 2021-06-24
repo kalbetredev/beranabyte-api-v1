@@ -62,7 +62,14 @@ export const getBlog = (req: Request, res: Response) => {
 };
 
 export const getBlogs = (req: Request, res: Response) => {
-  Blog.find({})
+  const category = req.query.category;
+
+  let filter = {};
+  if (category) {
+    filter = { category: { $regex: `^${category}$`, $options: "i" } };
+  }
+
+  Blog.find(filter)
     .select("-mdx")
     .then((blogs: any) => {
       return res.status(200).json({
