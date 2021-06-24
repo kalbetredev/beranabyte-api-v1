@@ -122,6 +122,28 @@ export const getLatestBlogs = (req: Request, res: Response) => {
     });
 };
 
+export const getFeaturedBlogs = (req: Request, res: Response) => {
+  const countParam = req.query.count;
+  const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
+
+  Blog.find({ isFeatured: true })
+    .sort({ publishedAt: "desc" })
+    .limit(count)
+    .select("-mdx")
+    .exec((error: any, blogs: any) => {
+      if (error)
+        return res.status(400).json({
+          success: false,
+          msg: "Unknown Error Ocurred getting the latest blogs",
+        });
+
+      return res.status(200).json({
+        success: true,
+        blogs,
+      });
+    });
+};
+
 export const addBlog = (req: any, res: Response) => {
   const userId = req.userId;
 

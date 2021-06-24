@@ -4,6 +4,7 @@ import { requiredStringSchema } from "./CommonSchemas";
 const BlogSchema = new Schema({
   title: { ...requiredStringSchema, unique: true },
   category: requiredStringSchema,
+  isFeatured: { type: Boolean, default: false },
   publishedAt: { type: Date, required: true },
   summary: requiredStringSchema,
   imageUrl: requiredStringSchema,
