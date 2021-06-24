@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
+import { isNumberObject } from "util/types";
 import Blog from "../models/Blog";
 import User from "../models/User";
 import { ADMIN_ROLE, WRITER_ROLE } from "../models/UserRoles";
@@ -62,6 +63,7 @@ export const getBlog = (req: Request, res: Response) => {
 
 export const getBlogs = (req: Request, res: Response) => {
   Blog.find({})
+    .select("-mdx")
     .then((blogs: any) => {
       return res.status(200).json({
         success: true,
@@ -72,6 +74,50 @@ export const getBlogs = (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         msg: "Unknown Error Ocurred getting the requested Blog",
+      });
+    });
+};
+
+export const getMostViewedBlogs = (req: Request, res: Response) => {
+  const countParam = req.query.count;
+  const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
+
+  Blog.find({})
+    .sort({ viewCount: "desc" })
+    .limit(count)
+    .select("-mdx")
+    .exec((error: any, blogs: any) => {
+      if (error)
+        return res.status(400).json({
+          success: false,
+          msg: "Unknown Error Ocurred getting the popular blogs",
+        });
+
+      return res.status(200).json({
+        success: true,
+        blogs,
+      });
+    });
+};
+
+export const getLatestBlogs = (req: Request, res: Response) => {
+  const countParam = req.query.count;
+  const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
+
+  Blog.find({})
+    .sort({ publishedAt: "desc" })
+    .limit(count)
+    .select("-mdx")
+    .exec((error: any, blogs: any) => {
+      if (error)
+        return res.status(400).json({
+          success: false,
+          msg: "Unknown Error Ocurred getting the latest blogs",
+        });
+
+      return res.status(200).json({
+        success: true,
+        blogs,
       });
     });
 };
