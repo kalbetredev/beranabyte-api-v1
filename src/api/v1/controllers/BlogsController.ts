@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
-import { isNumberObject } from "util/types";
 import Blog from "../models/Blog";
 import User from "../models/User";
 import { ADMIN_ROLE, WRITER_ROLE } from "../models/UserRoles";
@@ -27,6 +26,7 @@ export const getCategories = (req: Request, res: Response) => {
 
 export const getBlog = (req: Request, res: Response) => {
   const blogId = req.params.blogId;
+  const onlySummary = req.query.onlySummary;
 
   if (!isValidObjectId(blogId))
     return res.status(400).json({
@@ -46,6 +46,7 @@ export const getBlog = (req: Request, res: Response) => {
     blog
       .save()
       .then((updatedBlog: any) => {
+        if (onlySummary) updatedBlog.mdx = "";
         return res.status(200).json({
           success: true,
           blog: updatedBlog,
