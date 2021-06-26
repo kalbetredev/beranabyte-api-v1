@@ -1,10 +1,11 @@
 import { Response } from "express";
+import { isValidObjectId } from "mongoose";
 import User from "../models/User";
 
 export const getUserAccount = (req: any, res: Response) => {
   const id = req.userId;
 
-  if (!id)
+  if (!isValidObjectId(id))
     return res.status(400).json({
       success: false,
       msg: "Unknown Error Ocurred Getting User",
@@ -22,7 +23,7 @@ export const getUserAccount = (req: any, res: Response) => {
       success: true,
       msg: "User Account Details Fetched Successfully",
       user: {
-        id: user._id,
+        _id: user._id,
         username: user.username,
         email: user.email,
       },
@@ -33,7 +34,7 @@ export const getUserAccount = (req: any, res: Response) => {
 export const getUserPublicData = (req: any, res: Response) => {
   const id = req.params.id;
 
-  if (!id)
+  if (!isValidObjectId(id))
     return res.status(400).json({
       success: false,
       msg: "Unknown Error Ocurred Getting User",
