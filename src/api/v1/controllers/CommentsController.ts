@@ -44,6 +44,7 @@ export const getComments = (req: any, res: Response) => {
     });
 
   Comment.find({ blogId: blogId })
+    .sort({ date: "desc" })
     .then((comments: any) => {
       return res.status(200).json({
         success: true,
@@ -103,7 +104,7 @@ export const addComment = (req: any, res: Response) => {
       newComment
         .save()
         .then((comment: any) => {
-          return res.status(400).json({
+          return res.status(200).json({
             success: true,
             msg: "Comment Added Successfully",
             comment,
