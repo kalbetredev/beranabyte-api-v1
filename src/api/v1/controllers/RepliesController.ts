@@ -44,6 +44,7 @@ export const getReplies = (req: any, res: Response) => {
     });
 
   Reply.find({ commentId: commentId })
+    .sort({ date: "desc" })
     .then((replies: any) => {
       return res.status(200).json({
         success: true,
@@ -102,7 +103,7 @@ export const addReply = (req: any, res: Response) => {
       newReply
         .save()
         .then((reply: any) => {
-          return res.status(400).json({
+          return res.status(200).json({
             success: true,
             msg: "Reply Added Successfully",
             reply,
