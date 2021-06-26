@@ -79,7 +79,6 @@ export const login = (req: Request, res: Response) => {
   }
 
   const isValid = validateLoginInputs({ email, password });
-  console.log(isValid);
   if (isValid.error) {
     return res.status(400).json({ success: false, msg: "Invalid Inputs" });
   } else {
