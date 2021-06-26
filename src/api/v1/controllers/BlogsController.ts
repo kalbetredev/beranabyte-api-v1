@@ -53,7 +53,6 @@ export const getBlog = (req: Request, res: Response) => {
         });
       })
       .catch((error: any) => {
-        console.log(error);
         return res.status(400).json({
           success: false,
           msg: "Unknown Error Ocurred getting the requested Blog",
@@ -165,7 +164,7 @@ export const addBlog = (req: any, res: Response) => {
     if (user.role === WRITER_ROLE || user.role === ADMIN_ROLE) {
       saveBlog(req, res);
     } else {
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
         msg: "This user can not publish blogs",
       });
@@ -174,7 +173,7 @@ export const addBlog = (req: any, res: Response) => {
 };
 
 const saveBlog = (req: any, res: Response) => {
-  const { title, category, summary, imageUrl } = req.body;
+  const { title, category, summary, imageUrl, mdx } = req.body;
   const publishedAt = Date.now();
   const viewCount = 1;
 
@@ -185,6 +184,7 @@ const saveBlog = (req: any, res: Response) => {
     summary,
     imageUrl,
     viewCount,
+    mdx,
   };
   const isValid = validateBlog(blog);
 
@@ -196,8 +196,8 @@ const saveBlog = (req: any, res: Response) => {
   newBlog
     .save()
     .then((blog: any) => {
-      return res.status(400).json({
-        success: false,
+      return res.status(200).json({
+        success: true,
         msg: "Blog Added Successfully",
         blog,
       });
