@@ -7,6 +7,7 @@ import {
   getMostViewedBlogs,
   getLatestBlogs,
   getFeaturedBlogs,
+  updateBlogViewCount,
 } from "../controllers/BlogsController";
 import auth from "../middlewares/auth";
 
@@ -17,6 +18,7 @@ router.route("/popular").get(getMostViewedBlogs);
 router.route("/latest").get(getLatestBlogs);
 router.route("/featured").get(getFeaturedBlogs);
 router.route("/:blogId").get(getBlog);
+router.route("/:blogId").patch(updateBlogViewCount);
 router.route("/").get(getBlogs);
 router.route("/").post(auth, addBlog);
 

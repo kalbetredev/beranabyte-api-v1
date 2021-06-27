@@ -42,20 +42,45 @@ export const getBlog = (req: Request, res: Response) => {
       });
     }
 
+    if (onlySummary) blog.mdx = "";
+    return res.status(200).json({
+      success: true,
+      blog: blog,
+    });
+  });
+};
+
+export const updateBlogViewCount = (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+
+  if (!isValidObjectId(blogId))
+    return res.status(400).json({
+      success: false,
+      msg: "Invalid Blog Id",
+    });
+
+  Blog.findById(blogId).then((blog: any) => {
+    if (!blog) {
+      return res.status(400).json({
+        success: false,
+        msg: "Blog does not exist",
+      });
+    }
+
     blog.viewCount = blog.viewCount + 1;
     blog
       .save()
       .then((updatedBlog: any) => {
-        if (onlySummary) updatedBlog.mdx = "";
         return res.status(200).json({
           success: true,
+          ms: "Blog view count updated",
           blog: updatedBlog,
         });
       })
       .catch((error: any) => {
         return res.status(400).json({
           success: false,
-          msg: "Unknown Error Ocurred getting the requested Blog",
+          msg: "Unknown Error Ocurred updating view count of the blog",
         });
       });
   });
