@@ -1,7 +1,7 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import { requiredStringSchema, stringSchema } from "./CommonSchemas";
 
-export interface Bio {
+export interface Bio extends Document {
   summary: string;
   facebookLink: string;
   telegramLink: string;
