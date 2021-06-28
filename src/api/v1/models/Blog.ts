@@ -1,7 +1,18 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import { requiredStringSchema } from "./CommonSchemas";
 
-const BlogSchema = new Schema({
+interface Blog extends Document {
+  tile: string;
+  category: string;
+  isFeatured: boolean;
+  publishedAt: Date;
+  summary: string;
+  imageUrl: string;
+  viewCount: Number;
+  mdx: string;
+}
+
+const BlogSchema = new Schema<Blog>({
   title: { ...requiredStringSchema, unique: true },
   category: requiredStringSchema,
   isFeatured: { type: Boolean, default: false },
@@ -12,6 +23,6 @@ const BlogSchema = new Schema({
   mdx: requiredStringSchema,
 });
 
-const Blog = mongoose.model("blog", BlogSchema);
+const BlogModel = mongoose.model<Blog>("blog", BlogSchema);
 
-export default Blog;
+export default BlogModel;
