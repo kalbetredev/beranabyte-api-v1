@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
-import Blog from "../models/Blog";
+import BlogModel from "../models/Blog";
 import User from "../models/User";
 import { ADMIN_ROLE, WRITER_ROLE } from "../models/UserRoles";
 import { validateBlog } from "../validation/BlogValidation";
 
 export const getCategories = (req: Request, res: Response) => {
-  Blog.find({}).then((blogs: any) => {
+  BlogModel.find({}).then((blogs: any) => {
     if (!blogs) {
       return res.status(400).json({
         success: false,
@@ -34,7 +34,7 @@ export const getBlog = (req: Request, res: Response) => {
       msg: "Invalid Blog Id",
     });
 
-  Blog.findById(blogId).then((blog: any) => {
+  BlogModel.findById(blogId).then((blog: any) => {
     if (!blog) {
       return res.status(400).json({
         success: false,
@@ -59,7 +59,7 @@ export const updateBlogViewCount = (req: Request, res: Response) => {
       msg: "Invalid Blog Id",
     });
 
-  Blog.findById(blogId).then((blog: any) => {
+  BlogModel.findById(blogId).then((blog: any) => {
     if (!blog) {
       return res.status(400).json({
         success: false,
@@ -94,7 +94,7 @@ export const getBlogs = (req: Request, res: Response) => {
     filter = { category: { $regex: `^${category}$`, $options: "i" } };
   }
 
-  Blog.find(filter)
+  BlogModel.find(filter)
     .select("-mdx")
     .then((blogs: any) => {
       return res.status(200).json({
@@ -114,7 +114,7 @@ export const getMostViewedBlogs = (req: Request, res: Response) => {
   const countParam = req.query.count;
   const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
 
-  Blog.find({})
+  BlogModel.find({})
     .sort({ viewCount: "desc" })
     .limit(count)
     .select("-mdx")
@@ -136,7 +136,7 @@ export const getLatestBlogs = (req: Request, res: Response) => {
   const countParam = req.query.count;
   const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
 
-  Blog.find({})
+  BlogModel.find({})
     .sort({ publishedAt: "desc" })
     .limit(count)
     .select("-mdx")
@@ -158,7 +158,7 @@ export const getFeaturedBlogs = (req: Request, res: Response) => {
   const countParam = req.query.count;
   const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
 
-  Blog.find({ isFeatured: true })
+  BlogModel.find({ isFeatured: true })
     .sort({ publishedAt: "desc" })
     .limit(count)
     .select("-mdx")
@@ -217,7 +217,7 @@ const saveBlog = (req: any, res: Response) => {
     return res.status(400).json({ success: false, msg: "Invalid Inputs" });
   }
 
-  const newBlog = new Blog(blog);
+  const newBlog = new BlogModel(blog);
   newBlog
     .save()
     .then((blog: any) => {

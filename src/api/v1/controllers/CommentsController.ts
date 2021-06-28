@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { validateComment } from "../validation/CommentValidation";
 import Comment from "../models/Comment";
-import Blog from "../models/Blog";
+import BlogModel from "../models/Blog";
 import { isValidObjectId } from "mongoose";
 
 export const getComment = (req: any, res: Response) => {
@@ -77,7 +77,7 @@ export const addComment = (req: any, res: Response) => {
       msg: "Invalid Blog Id",
     });
 
-  Blog.findById(blogId)
+  BlogModel.findById(blogId)
     .then((blog: any) => {
       if (!blog) {
         return res.status(400).json({
