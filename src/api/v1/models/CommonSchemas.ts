@@ -3,3 +3,8 @@ export const requiredStringSchema = {
   required: true,
   trim: true,
 };
+
+export const stringSchema = {
+  type: String,
+  trim: true,
+};
