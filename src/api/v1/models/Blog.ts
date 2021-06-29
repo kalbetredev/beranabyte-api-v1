@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { requiredStringSchema } from "./CommonSchemas";
 
-interface Blog extends Document {
+export interface Blog extends Document {
   tile: string;
   category: string;
   isFeatured: boolean;

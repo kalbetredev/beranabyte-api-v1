@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
-import BlogModel from "../models/Blog";
+import BlogModel, { Blog } from "../models/Blog";
 import ProjectModel, { Project } from "../models/Project";
 import ProjectBlogModel, { ProjectBlog } from "../models/ProjectBlog";
 import UserModel, { User } from "../models/User";
@@ -65,6 +65,27 @@ export const relateBlogToProject = async (req: any, res: Response) => {
       success: false,
       msg: "Invalid Blog or Project Id provided",
     });
+};
+
+export const getProjectRelatedBlogs = async (req: Request, res: Response) => {
+  try {
+    const projectRelatedBlogs = await ProjectBlogModel.find({});
+    const blogIds = projectRelatedBlogs.map(
+      (projectBlog: ProjectBlog) => projectBlog.blogId
+    );
+
+    const blogs: Blog[] = await BlogModel.find({ _id: { $in: blogIds } });
+    return res.status(200).json({
+      success: true,
+      blogs: blogs,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({
+      success: false,
+      msg: "Error Getting Project related Blogs",
+    });
+  }
 };
 
 const saveProject = async (req: any, res: Response) => {
