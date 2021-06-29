@@ -5,6 +5,7 @@ import {
   issueJWT,
 } from "../helpers/passwordUtils";
 import User from "../models/User";
+import { NORMAL_ROLE } from "../models/UserRoles";
 import {
   validateRegistration,
   validateLoginInputs,
@@ -21,6 +22,7 @@ const createUser = async (
     username: username,
     email: email,
     hash: passwordHash,
+    role: NORMAL_ROLE,
   });
 
   return newUser;
@@ -77,7 +79,6 @@ export const login = (req: Request, res: Response) => {
   }
 
   const isValid = validateLoginInputs({ email, password });
-  console.log(isValid);
   if (isValid.error) {
     return res.status(400).json({ success: false, msg: "Invalid Inputs" });
   } else {
