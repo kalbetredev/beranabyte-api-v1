@@ -102,7 +102,7 @@ export const getPublishedBlogs = (req: Request, res: Response) => {
   }
 
   BlogModel.find({ ...filter, isPublished: true })
-    .select("-mdx, -isPublished")
+    .select("-mdx -isPublished")
     .then((blogs: any) => {
       return res.status(200).json({
         success: true,
