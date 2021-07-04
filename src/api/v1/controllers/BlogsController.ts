@@ -4,7 +4,11 @@ import ApiError from "../models/ApiError";
 import BlogModel, { Blog } from "../models/Blog";
 import User from "../models/User";
 import { ADMIN_ROLE, WRITER_ROLE } from "../models/UserRoles";
-import { validateBlog } from "../validation/BlogValidation";
+import {
+  validateBlog,
+  validateUnpublishedBlog,
+} from "../validation/BlogValidation";
+import { MongoError } from "mongodb";
 
 export const getCategories = (req: Request, res: Response) => {
   BlogModel.find({}).then((blogs: any) => {
@@ -208,61 +212,179 @@ export const getFeaturedBlogs = (req: Request, res: Response) => {
     });
 };
 
-export const addBlog = (req: any, res: Response) => {
-  const userId = req.userId;
+export const createNewBlog = async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
 
-  if (!userId)
-    return res.status(400).json({
-      success: false,
-      msg: "Unknown Error Ocurred Getting User",
-    });
+    if (!userId)
+      throw new ApiError(400, "Error Occurred Verifying Your Account");
 
-  User.findOne({ _id: userId }).then((user: any) => {
-    if (user.role === WRITER_ROLE || user.role === ADMIN_ROLE) {
-      saveBlog(req, res);
-    } else {
-      return res.status(401).json({
-        success: false,
-        msg: "This user can not publish blogs",
-      });
-    }
-  });
-};
+    const user = await User.findById(userId);
 
-const saveBlog = (req: any, res: Response) => {
-  const { title, category, summary, imageUrl, mdx } = req.body;
-  const publishedAt = Date.now();
-  const viewCount = 1;
+    if (user && (user.role === WRITER_ROLE || user.role === ADMIN_ROLE)) {
+      const { title, category } = req.body;
+      const blog = {
+        authorId: user._id.toString(),
+        title,
+        category,
+        isPublished: false,
+        lastModifiedAt: new Date(),
+      };
 
-  const blog = {
-    title,
-    category,
-    publishedAt,
-    summary,
-    imageUrl,
-    viewCount,
-    mdx,
-  };
-  const isValid = validateBlog(blog);
+      const isValid = validateUnpublishedBlog(blog);
+      if (isValid.error) throw new ApiError(400, "Invalid Inputs");
 
-  if (isValid.error) {
-    return res.status(400).json({ success: false, msg: "Invalid Inputs" });
-  }
+      const newBlog = new BlogModel(blog);
+      const savedBlog = await newBlog.save();
 
-  const newBlog = new BlogModel(blog);
-  newBlog
-    .save()
-    .then((blog: any) => {
       return res.status(200).json({
         success: true,
-        msg: "Blog Added Successfully",
-        blog,
+        blog: savedBlog,
       });
-    })
-    .catch((error: any) => {
+    } else
+      throw new ApiError(401, "Your unauthorized to access this API end point");
+  } catch (error) {
+    if (error instanceof ApiError)
+      return res.status(error.status).json({
+        success: false,
+        msg: error.message,
+      });
+    else if (error instanceof MongoError && error.code == 11000) {
       return res.status(400).json({
         success: false,
-        msg: "Error occurred when adding the blog",
+        msg: "The title of your blog is already taken.",
       });
+    }
+
+    return res.status(500).json({
+      success: false,
+      msg: "Error Occurred Creating Your Blog",
     });
+  }
+};
+
+export const saveBlog = async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId)
+      throw new ApiError(400, "Error Occurred Verifying Your Account");
+
+    const user = await User.findById(userId);
+    if (user && (user.role === WRITER_ROLE || user.role === ADMIN_ROLE)) {
+      const blogId = req.params.blogId;
+      const { title, category, summary, imageUrl, mdx } = req.body;
+      if (!isValidObjectId(blogId)) throw new ApiError(400, "Invalid Blog Id");
+
+      const blog = await BlogModel.findOne({ _id: blogId });
+      if (blog) {
+        if (blog.authorId !== user._id.toString())
+          throw new ApiError(
+            401,
+            "You don't have sufficient rights to perform this action"
+          );
+
+        blog.title = title;
+        blog.category = category;
+        blog.summary = summary ?? "";
+        blog.imageUrl = imageUrl ?? "";
+        blog.mdx = mdx ?? "";
+        blog.lastModifiedAt = new Date();
+
+        const isValid = validateUnpublishedBlog({
+          authorId: blog.authorId,
+          title: blog.title,
+          category: blog.category,
+          isPublished: blog.isPublished,
+          lastModifiedAt: blog.lastModifiedAt,
+        });
+
+        if (isValid.error) throw new ApiError(400, "Invalid Inputs");
+
+        await blog.save();
+        return res.status(200).json({
+          success: false,
+          msg: "Blog Saved",
+        });
+      } else throw new ApiError(404, "Blog Not Found");
+    } else
+      throw new ApiError(401, "Your unauthorized to access this API end point");
+  } catch (error) {
+    if (error instanceof ApiError)
+      return res.status(error.status).json({
+        success: false,
+        msg: error.message,
+      });
+    else if (error instanceof MongoError && error.code == 11000) {
+      return res.status(400).json({
+        success: false,
+        msg: "The title of your blog is already taken.",
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      msg: "Error Occurred Saving Your Blog",
+    });
+  }
+};
+
+export const publishBlog = async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId)
+      throw new ApiError(400, "Error Occurred Verifying Your Account");
+
+    const user = await User.findById(userId);
+    if (user && (user.role === WRITER_ROLE || user.role === ADMIN_ROLE)) {
+      const blogId = req.params.blogId;
+      if (!isValidObjectId(blogId)) throw new ApiError(400, "Invalid Blog Id");
+
+      const blog = await BlogModel.findOne({ _id: blogId });
+      if (blog) {
+        if (blog.authorId !== user._id.toString())
+          throw new ApiError(
+            401,
+            "You don't have sufficient rights to perform this action"
+          );
+
+        blog.isPublished = true;
+        blog.lastModifiedAt = new Date();
+        blog.publishedAt = blog.lastModifiedAt;
+
+        const isValid = validateBlog({
+          authorId: blog.authorId,
+          title: blog.title,
+          category: blog.category,
+          isPublished: blog.isPublished,
+          publishedAt: blog.publishedAt,
+          lastModifiedAt: blog.lastModifiedAt,
+          summary: blog.summary,
+          imageUrl: blog.imageUrl,
+          viewCount: blog.viewCount,
+          mdx: blog.mdx,
+        });
+
+        if (isValid.error) throw new ApiError(400, "Invalid Inputs");
+
+        await blog.save();
+        return res.status(200).json({
+          success: true,
+          msg: "Blog Published",
+        });
+      } else throw new ApiError(404, "Blog Not Found");
+    } else
+      throw new ApiError(401, "Your unauthorized to access this API end point");
+  } catch (error) {
+    if (error instanceof ApiError)
+      return res.status(error.status).json({
+        success: false,
+        msg: error.message,
+      });
+
+    return res.status(500).json({
+      success: false,
+      msg: "Error Occurred Publishing Your Blog",
+    });
+  }
 };
