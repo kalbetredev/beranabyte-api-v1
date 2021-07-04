@@ -1,6 +1,7 @@
 import Joi from "joi";
 
 const BlogSchema = Joi.object({
+  authorId: Joi.string().required(),
   title: Joi.string().required().min(5),
   category: Joi.string().required().min(3),
   isFeatured: Joi.boolean(),
@@ -13,6 +14,7 @@ const BlogSchema = Joi.object({
 });
 
 const unPublishedBlogSchema = Joi.object({
+  authorId: Joi.string().required(),
   title: Joi.string().required().min(5),
   category: Joi.string().required().min(3),
   isFeatured: Joi.boolean(),

@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 import { requiredStringSchema } from "./CommonSchemas";
 
 export interface Blog extends Document {
+  authorId: string;
   tile: string;
   category: string;
   isFeatured: boolean;
@@ -14,6 +15,7 @@ export interface Blog extends Document {
 }
 
 const BlogSchema = new Schema<Blog>({
+  authorId: { type: String, required: true },
   title: { ...requiredStringSchema, unique: true },
   category: requiredStringSchema,
   isFeatured: { type: Boolean, default: false },
