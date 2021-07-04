@@ -86,16 +86,18 @@ export const updateBlogViewCount = (req: Request, res: Response) => {
   });
 };
 
-export const getBlogs = (req: Request, res: Response) => {
+export const getPublishedBlogs = (req: Request, res: Response) => {
   const category = req.query.category;
 
   let filter = {};
   if (category) {
-    filter = { category: { $regex: `^${category}$`, $options: "i" } };
+    filter = {
+      category: { $regex: `^${category}$`, $options: "i" },
+    };
   }
 
-  BlogModel.find(filter)
-    .select("-mdx")
+  BlogModel.find({ ...filter, isPublished: true })
+    .select("-mdx, -isPublished")
     .then((blogs: any) => {
       return res.status(200).json({
         success: true,
