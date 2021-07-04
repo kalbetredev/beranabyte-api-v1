@@ -3,11 +3,12 @@ import { requiredStringSchema } from "./CommonSchemas";
 
 export interface Blog extends Document {
   authorId: string;
-  tile: string;
+  title: string;
   category: string;
   isFeatured: boolean;
   isPublished: boolean;
   publishedAt: Date;
+  lastModifiedAt: Date;
   summary: string;
   imageUrl: string;
   viewCount: Number;
@@ -21,6 +22,7 @@ const BlogSchema = new Schema<Blog>({
   isFeatured: { type: Boolean, default: false },
   isPublished: { type: Boolean, default: false },
   publishedAt: { type: Date, required: true },
+  lastModifiedAt: { type: Date, required: true },
   summary: { type: String },
   imageUrl: { type: String },
   viewCount: { type: Number, required: true },
