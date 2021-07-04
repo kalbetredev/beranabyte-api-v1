@@ -5,6 +5,7 @@ export interface Blog extends Document {
   tile: string;
   category: string;
   isFeatured: boolean;
+  isPublished: boolean;
   publishedAt: Date;
   summary: string;
   imageUrl: string;
@@ -16,11 +17,12 @@ const BlogSchema = new Schema<Blog>({
   title: { ...requiredStringSchema, unique: true },
   category: requiredStringSchema,
   isFeatured: { type: Boolean, default: false },
+  isPublished: { type: Boolean, default: false },
   publishedAt: { type: Date, required: true },
-  summary: requiredStringSchema,
-  imageUrl: requiredStringSchema,
+  summary: { type: String },
+  imageUrl: { type: String },
   viewCount: { type: Number, required: true },
-  mdx: requiredStringSchema,
+  mdx: { type: String },
 });
 
 const BlogModel = mongoose.model<Blog>("blog", BlogSchema);
