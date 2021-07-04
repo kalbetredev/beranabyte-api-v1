@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
-import BlogModel from "../models/Blog";
+import ApiError from "../models/ApiError";
+import BlogModel, { Blog } from "../models/Blog";
 import User from "../models/User";
 import { ADMIN_ROLE, WRITER_ROLE } from "../models/UserRoles";
 import { validateBlog } from "../validation/BlogValidation";
@@ -110,6 +111,35 @@ export const getPublishedBlogs = (req: Request, res: Response) => {
         msg: "Unknown Error Ocurred getting the requested Blog",
       });
     });
+};
+
+export const getAllUserBlogs = async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId)
+      throw new ApiError(400, "Error Occurred Verifying Your Account");
+
+    const blogs: Blog[] = await BlogModel.find({ authorId: userId }).select(
+      "-mdx"
+    );
+
+    return res.status(200).json({
+      success: true,
+      blogs,
+    });
+  } catch (error) {
+    if (error instanceof ApiError)
+      return res.status(error.status).json({
+        success: false,
+        msg: error.message,
+      });
+
+    return res.status(500).json({
+      success: false,
+      msg: "Error Occurred Getting All Your Blogs",
+    });
+  }
 };
 
 export const getMostViewedBlogs = (req: Request, res: Response) => {
