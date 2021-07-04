@@ -21,11 +21,11 @@ const BlogSchema = new Schema<Blog>({
   category: requiredStringSchema,
   isFeatured: { type: Boolean, default: false },
   isPublished: { type: Boolean, default: false },
-  publishedAt: { type: Date, required: true },
+  publishedAt: { type: Date },
   lastModifiedAt: { type: Date, required: true },
   summary: { type: String },
   imageUrl: { type: String },
-  viewCount: { type: Number, required: true },
+  viewCount: { type: Number, default: 0 },
   mdx: { type: String },
 });
 
