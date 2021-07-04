@@ -1,17 +1,30 @@
-import { createConnection, connect, ConnectOptions } from "mongoose";
+import { config } from "dotenv";
+config();
+import {
+  createConnection,
+  connect,
+  ConnectOptions,
+  ConnectionOptions,
+} from "mongoose";
+import { MONGO_URI } from "./Constants";
 
-const connectionOption: ConnectOptions = {
+export const connectionOption: ConnectOptions = {
   useCreateIndex: true,
   useFindAndModify: true,
   useNewUrlParser: true,
   useUnifiedTopology: true,
 };
 
-export const connection = (uri: string) =>
-  createConnection(uri, connectionOption);
+export const gFsConnectionOption: ConnectOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+};
 
-const connectDb = (uri: string) =>
-  connect(uri, connectionOption).then((m) => {
+export const makeConnection = (option: ConnectionOptions) =>
+  createConnection(MONGO_URI, option);
+
+const connectDb = () =>
+  connect(MONGO_URI, connectionOption).then((m) => {
     console.log("Connected to MongoDB Successfully");
     return m.connection.getClient();
   });
