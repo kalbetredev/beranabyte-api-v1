@@ -9,6 +9,7 @@ import {
   validateUnpublishedBlog,
 } from "../validation/BlogValidation";
 import { MongoError } from "mongodb";
+import BlogImageModel from "../models/BlogImage";
 
 export const getCategories = (req: Request, res: Response) => {
   BlogModel.find({}).then((blogs: any) => {
@@ -385,6 +386,55 @@ export const publishBlog = async (req: any, res: Response) => {
     return res.status(500).json({
       success: false,
       msg: "Error Occurred Publishing Your Blog",
+    });
+  }
+};
+
+export const deleteBlog = async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId)
+      throw new ApiError(400, "Error Occurred Verifying Your Account");
+
+    const user = await User.findById(userId);
+
+    if (user) {
+      const blogId = req.params.blogId;
+      const blog = await BlogModel.findOne({ _id: blogId });
+
+      if (blog) {
+        if (user.role === ADMIN_ROLE || blog.authorId === user._id.toString()) {
+          BlogImageModel.deleteMany(
+            { blogId: blogId, userId: blog.authorId },
+            (error: any) => {
+              if (error) throw new ApiError(500, "Blog Could Not be Deleted");
+            }
+          );
+          BlogModel.deleteOne({ _id: blogId }, (error: any) => {
+            if (error) throw new ApiError(500, "Blog Could Not be Deleted");
+            res.status(200).json({
+              success: true,
+              msg: "Blog Deleted Successfully",
+            });
+          });
+        } else
+          throw new ApiError(
+            401,
+            "You don't have sufficient rights to perform this action"
+          );
+      } else throw new ApiError(404, "Blog Not Found");
+    } else
+      throw new ApiError(401, "Your unauthorized to access this API end point");
+  } catch (error) {
+    if (error instanceof ApiError)
+      return res.status(error.status).json({
+        success: false,
+        msg: error.message,
+      });
+    return res.status(500).json({
+      success: false,
+      msg: "Error Occurred Creating Your Blog",
     });
   }
 };

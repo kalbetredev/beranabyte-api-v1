@@ -11,6 +11,7 @@ import {
   createNewBlog,
   saveBlog,
   publishBlog,
+  deleteBlog,
 } from "../controllers/BlogsController";
 import auth from "../middlewares/auth";
 
@@ -23,7 +24,11 @@ router.route("/featured").get(getFeaturedBlogs);
 router.route("/all").get(auth, getAllUserBlogs);
 router.route("/:blogId/publish").post(auth, publishBlog);
 router.route("/:blogId/save").patch(auth, saveBlog);
-router.route("/:blogId").get(getBlog).patch(updateBlogViewCount);
+router
+  .route("/:blogId")
+  .get(getBlog)
+  .patch(updateBlogViewCount)
+  .delete(auth, deleteBlog);
 router.route("/").get(getPublishedBlogs).post(auth, createNewBlog);
 
 export default router;
