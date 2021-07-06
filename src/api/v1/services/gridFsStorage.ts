@@ -10,6 +10,7 @@ import { isValidObjectId, Types } from "mongoose";
 import { Response } from "express";
 import { GridFSBucket } from "mongodb";
 import { IMAGES_BUCKET_NAME } from "./gridFsConstants";
+import ApiError from "../models/ApiError";
 
 let gridFsBucket: GridFSBucket;
 
@@ -38,35 +39,17 @@ const gridFsStorage = new GridFsStorage({
   },
 });
 
-export const deleteImageById = (id: any, res: Response) => {
-  if (!isValidObjectId(id))
-    return res.status(400).json({
-      success: false,
-      msg: "Invalid Image File Id",
-    });
-
-  const _id = new Types.ObjectId(id);
-  gridFsBucket.delete(_id, (err: any) => {
-    if (err)
-      return res.status(500).send({
-        success: true,
-        msg: "Image Deletion Error",
-      });
-    else
-      return res.status(200).send({
-        success: true,
-        msg: "Image Deleted",
-      });
-  });
+export const deleteImageById = (
+  id: any,
+  callback: (err: any, result: any) => void
+) => {
+  if (!isValidObjectId(id)) return new ApiError(400, "Invalid Image File Id");
+  gridFsBucket.delete(new Types.ObjectId(id), callback);
 };
 
 export const findAndStreamImage = (_id: Types._ObjectId, res: Response) => {
   gridFsBucket.find({ _id }).toArray((err, files) => {
-    if (!files || files.length === 0)
-      return res.status(404).json({
-        success: false,
-        msg: "No Image Found",
-      });
+    if (!files || files.length === 0) throw new ApiError(404, "No Image Found");
     gridFsBucket.openDownloadStream(files[0]._id).pipe(res);
   });
 };
