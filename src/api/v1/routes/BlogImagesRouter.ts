@@ -13,7 +13,7 @@ const router = express.Router({ mergeParams: true });
 router.route("/:imageFileName").get(getBlogImage).delete(auth, deleteBlogImage);
 router
   .route("/")
-  .get(auth, getBlogImages)
+  .get(getBlogImages)
   .post(auth, uploadMiddleware, uploadBlogImage);
 
 export default router;
