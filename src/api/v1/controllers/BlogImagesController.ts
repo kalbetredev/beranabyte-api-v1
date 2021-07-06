@@ -32,8 +32,19 @@ export const deleteBlogImage = async (req: any, res: Response) => {
     if (image.userId !== userId)
       throw new ApiError(401, "Your Request is Denied");
 
-    deleteImageById(image.imageId, res);
-    await BlogImageModel.deleteOne({ imageId: image.imageId });
+    deleteImageById(image.imageId, (err) => {
+      if (err) return new ApiError(500, "Image Deletion Error");
+      else {
+        BlogImageModel.deleteOne({ imageId: image.imageId }, (err) => {
+          if (err) return new ApiError(500, "Image Deletion Error");
+          else
+            return res.status(200).json({
+              success: true,
+              msg: "Image Deleted",
+            });
+        });
+      }
+    });
   } catch (error) {
     if (error instanceof ApiError)
       return res.status(error.status).json({
@@ -50,9 +61,8 @@ export const deleteBlogImage = async (req: any, res: Response) => {
 
 export const getBlogImages = async (req: any, res: Response) => {
   try {
-    const userId = req.userId;
     let { blogId } = req.params;
-    const images: BlogImage[] = await getImages(userId, blogId);
+    const images: BlogImage[] = await getImages(blogId);
 
     return res.status(200).json({
       success: true,
@@ -79,8 +89,10 @@ export const uploadBlogImage = async (req: any, res: Response) => {
     const { id } = file as any;
 
     if (file && file.size > 50000000) {
-      deleteImageById(id, res);
-      throw new ApiError(400, "File may not exceed 5mb");
+      deleteImageById(id, (err) => {
+        if (err) throw new ApiError(500, "Failed to remove huge image");
+        throw new ApiError(400, "File may not exceed 5mb");
+      });
     }
 
     const blogImage = new BlogImageModel({
@@ -130,16 +142,12 @@ const getImage = async (
   }
 };
 
-const getImages = async (
-  userId: string,
-  blogId: string
-): Promise<BlogImage[]> => {
+const getImages = async (blogId: string): Promise<BlogImage[]> => {
   try {
     if (!blogId) throw new ApiError(400, "Invalid Request");
 
     const blogImages: BlogImage[] = await BlogImageModel.find({
       blogId: blogId,
-      userId: userId,
     });
 
     return blogImages;
