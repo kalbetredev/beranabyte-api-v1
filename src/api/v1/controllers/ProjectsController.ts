@@ -28,7 +28,7 @@ export const getProjects = async (req: Request, res: Response) => {
 export const addProject = async (req: any, res: Response) => {
   const userId = req.userId;
 
-  if (isUserAllowed(userId))
+  if (!isUserAllowed(userId))
     return res.status(400).json({
       success: false,
       msg: "Invalid User Id or the User can not add projects",
