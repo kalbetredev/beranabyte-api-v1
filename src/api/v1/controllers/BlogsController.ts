@@ -40,7 +40,7 @@ export const getBlog = (req: Request, res: Response) => {
       msg: "Invalid Blog Id",
     });
 
-  BlogModel.findById(blogId).then((blog: any) => {
+  BlogModel.findOne({ _id: blogId, isPublished: true }).then((blog: any) => {
     if (!blog) {
       return res.status(400).json({
         success: false,
@@ -65,7 +65,7 @@ export const updateBlogViewCount = (req: Request, res: Response) => {
       msg: "Invalid Blog Id",
     });
 
-  BlogModel.findById(blogId).then((blog: any) => {
+  BlogModel.findOne({ _id: blogId, isPublished: true }).then((blog: any) => {
     if (!blog) {
       return res.status(400).json({
         success: false,
@@ -151,7 +151,7 @@ export const getMostViewedBlogs = (req: Request, res: Response) => {
   const countParam = req.query.count;
   const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
 
-  BlogModel.find({})
+  BlogModel.find({ isPublished: true })
     .sort({ viewCount: "desc" })
     .limit(count)
     .select("-mdx")
@@ -173,7 +173,7 @@ export const getLatestBlogs = (req: Request, res: Response) => {
   const countParam = req.query.count;
   const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
 
-  BlogModel.find({})
+  BlogModel.find({ isPublished: true })
     .sort({ publishedAt: "desc" })
     .limit(count)
     .select("-mdx")
@@ -195,7 +195,7 @@ export const getFeaturedBlogs = (req: Request, res: Response) => {
   const countParam = req.query.count;
   const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
 
-  BlogModel.find({ isFeatured: true })
+  BlogModel.find({ isFeatured: true, isPublished: true })
     .sort({ publishedAt: "desc" })
     .limit(count)
     .select("-mdx")
@@ -304,7 +304,7 @@ export const saveBlog = async (req: any, res: Response) => {
 
         await blog.save();
         return res.status(200).json({
-          success: false,
+          success: true,
           msg: "Blog Saved",
         });
       } else throw new ApiError(404, "Blog Not Found");
