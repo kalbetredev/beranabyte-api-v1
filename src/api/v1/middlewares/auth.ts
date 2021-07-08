@@ -1,10 +1,6 @@
 import { NextFunction, Response } from "express";
 import { verify } from "jsonwebtoken";
-import fs from "fs";
-import path from "path";
-
-const pathToKey = path.join(__dirname, "../../../../", "id_rsa_priv.pem");
-const PRIV_KEY = fs.readFileSync(pathToKey, "utf8");
+import { PRIV_KEY } from "../helpers/passwordUtils";
 
 const auth = (req: any, res: Response, next: NextFunction) => {
   const token = req.header("x-auth-token");
