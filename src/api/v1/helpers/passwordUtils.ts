@@ -1,10 +1,11 @@
+import { config } from "dotenv";
+config();
+
 import bcrypt from "bcrypt";
-import fs from "fs";
-import path from "path";
 import { sign } from "jsonwebtoken";
 
-const pathToKey = path.join(__dirname, "../../../../", "id_rsa_priv.pem");
-const PRIV_KEY = fs.readFileSync(pathToKey, "utf8");
+const JWT_KEYS = JSON.parse(process.env.JWT_KEYS || "");
+export const PRIV_KEY = JWT_KEYS.JWT_PRIVATE_KEY;
 
 export const isPasswordValid = async (
   password: string,
