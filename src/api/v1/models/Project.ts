@@ -5,14 +5,22 @@ export interface Project extends Document {
   title: string;
   summary: string;
   githubLink: string;
-  tags: string;
+  tags: string[];
+  liveDemoLink: string;
+  techStack: string[];
+  type: string;
+  publishedOn: Date;
+  isFeatured: boolean;
 }
 
 const ProjectSchema = new Schema<Project>({
   title: requiredStringSchema,
   summary: requiredStringSchema,
   githubLink: requiredStringSchema,
-  tags: stringSchema,
+  liveDemoLink: requiredStringSchema,
+  type: requiredStringSchema,
+  publishedOn: { type: Date },
+  isFeatured: { type: Boolean, default: false },
 });
 
 const ProjectModel = mongoose.model<Project>("project", ProjectSchema);
