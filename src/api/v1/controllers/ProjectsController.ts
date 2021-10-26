@@ -61,7 +61,6 @@ const isUserAllowed = async (userId: string): Promise<boolean> => {
   }
 };
 
-// New Methods
 export const getProjects = async (req: Request, res: Response) => {
   const { featured, type, count } = req.query;
   const limit = count ? parseInt(count.toString()) ?? 5 : 5;
