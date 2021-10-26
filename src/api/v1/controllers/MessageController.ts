@@ -6,7 +6,7 @@ import { validateMessage } from "../validation/MessageValidation";
 export const addMessage = async (req: any, res: Response) => {
   try {
     const { email, content } = req.body;
-    console.log(email, content);
+
     const message = {
       email,
       content,
