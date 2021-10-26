@@ -21,7 +21,7 @@ export const addMessage = async (req: any, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      message: savedMessage,
+      message: savedMessage.content,
     });
   } catch {
     return res.status(500).json({
