@@ -11,87 +11,6 @@ import {
 import { MongoError } from "mongodb";
 import BlogImageModel from "../models/BlogImage";
 
-export const getCategories = (req: Request, res: Response) => {
-  BlogModel.find({}).then((blogs: any) => {
-    if (!blogs) {
-      return res.status(400).json({
-        success: false,
-        msg: "No Blogs Found",
-      });
-    }
-
-    const categories = new Set();
-    blogs.map((blog: any) => categories.add(blog.category));
-
-    return res.status(200).json({
-      success: true,
-      categories: Array.from(categories),
-    });
-  });
-};
-
-export const getBlog = (req: Request, res: Response) => {
-  const blogId = req.params.blogId;
-  const onlySummary = req.query.onlySummary;
-
-  if (!isValidObjectId(blogId))
-    return res.status(400).json({
-      success: false,
-      msg: "Invalid Blog Id",
-    });
-
-  BlogModel.findOne({ _id: blogId, isPublished: true }).then((blog: any) => {
-    if (!blog) {
-      return res.status(400).json({
-        success: false,
-        msg: "Blog does not exist",
-      });
-    }
-
-    if (onlySummary) blog.mdx = "";
-    return res.status(200).json({
-      success: true,
-      blog: blog,
-    });
-  });
-};
-
-export const updateBlogViewCount = (req: Request, res: Response) => {
-  const blogId = req.params.blogId;
-
-  if (!isValidObjectId(blogId))
-    return res.status(400).json({
-      success: false,
-      msg: "Invalid Blog Id",
-    });
-
-  BlogModel.findOne({ _id: blogId, isPublished: true }).then((blog: any) => {
-    if (!blog) {
-      return res.status(400).json({
-        success: false,
-        msg: "Blog does not exist",
-      });
-    }
-
-    blog.viewCount = blog.viewCount + 1;
-    blog
-      .save()
-      .then((updatedBlog: any) => {
-        return res.status(200).json({
-          success: true,
-          ms: "Blog view count updated",
-          blog: updatedBlog,
-        });
-      })
-      .catch((error: any) => {
-        return res.status(400).json({
-          success: false,
-          msg: "Unknown Error Ocurred updating view count of the blog",
-        });
-      });
-  });
-};
-
 export const getPublishedBlogs = (req: Request, res: Response) => {
   const category = req.query.category;
 
@@ -145,72 +64,6 @@ export const getAllUserBlogs = async (req: any, res: Response) => {
       msg: "Error Occurred Getting All Your Blogs",
     });
   }
-};
-
-export const getMostViewedBlogs = (req: Request, res: Response) => {
-  const countParam = req.query.count;
-  const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
-
-  BlogModel.find({ isPublished: true })
-    .sort({ viewCount: "desc" })
-    .limit(count)
-    .select("-mdx")
-    .exec((error: any, blogs: any) => {
-      if (error)
-        return res.status(400).json({
-          success: false,
-          msg: "Unknown Error Ocurred getting the popular blogs",
-        });
-
-      return res.status(200).json({
-        success: true,
-        blogs,
-      });
-    });
-};
-
-export const getLatestBlogs = (req: Request, res: Response) => {
-  const countParam = req.query.count;
-  const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
-
-  BlogModel.find({ isPublished: true })
-    .sort({ publishedAt: "desc" })
-    .limit(count)
-    .select("-mdx")
-    .exec((error: any, blogs: any) => {
-      if (error)
-        return res.status(400).json({
-          success: false,
-          msg: "Unknown Error Ocurred getting the latest blogs",
-        });
-
-      return res.status(200).json({
-        success: true,
-        blogs,
-      });
-    });
-};
-
-export const getFeaturedBlogs = (req: Request, res: Response) => {
-  const countParam = req.query.count;
-  const count = countParam ? parseInt(countParam.toString()) ?? 5 : 5;
-
-  BlogModel.find({ isFeatured: true, isPublished: true })
-    .sort({ publishedAt: "desc" })
-    .limit(count)
-    .select("-mdx")
-    .exec((error: any, blogs: any) => {
-      if (error)
-        return res.status(400).json({
-          success: false,
-          msg: "Unknown Error Ocurred getting the latest blogs",
-        });
-
-      return res.status(200).json({
-        success: true,
-        blogs,
-      });
-    });
 };
 
 export const createNewBlog = async (req: any, res: Response) => {
@@ -286,18 +139,18 @@ export const saveBlog = async (req: any, res: Response) => {
           );
 
         blog.title = title;
-        blog.category = category;
+        blog.topic = category;
         blog.summary = summary ?? "";
         blog.imageUrl = imageUrl ?? "";
-        blog.mdx = mdx ?? "";
-        blog.lastModifiedAt = new Date();
+        blog.content = mdx ?? "";
+        blog.lastModifiedOn = new Date();
 
         const isValid = validateUnpublishedBlog({
           authorId: blog.authorId,
           title: blog.title,
-          category: blog.category,
+          category: blog.topic,
           isPublished: blog.isPublished,
-          lastModifiedAt: blog.lastModifiedAt,
+          lastModifiedAt: blog.lastModifiedOn,
         });
 
         if (isValid.error) throw new ApiError(400, "Invalid Inputs");
@@ -350,20 +203,20 @@ export const publishBlog = async (req: any, res: Response) => {
           );
 
         blog.isPublished = true;
-        blog.lastModifiedAt = new Date();
-        blog.publishedAt = blog.lastModifiedAt;
+        blog.lastModifiedOn = new Date();
+        blog.publishedOn = blog.lastModifiedOn;
 
         const isValid = validateBlog({
           authorId: blog.authorId,
           title: blog.title,
-          category: blog.category,
+          category: blog.topic,
           isPublished: blog.isPublished,
-          publishedAt: blog.publishedAt,
-          lastModifiedAt: blog.lastModifiedAt,
+          publishedAt: blog.publishedOn,
+          lastModifiedAt: blog.lastModifiedOn,
           summary: blog.summary,
           imageUrl: blog.imageUrl,
           viewCount: blog.viewCount,
-          mdx: blog.mdx,
+          mdx: blog.content,
         });
 
         if (isValid.error) throw new ApiError(400, "Invalid Inputs");
@@ -437,4 +290,126 @@ export const deleteBlog = async (req: any, res: Response) => {
       msg: "Error Occurred Creating Your Blog",
     });
   }
+};
+
+export const getTopics = async (req: Request, res: Response) => {
+  BlogModel.find({ isPublished: true }).then((blogs: any) => {
+    if (!blogs) {
+      return res.status(400).json({
+        success: false,
+        msg: "No Blogs Found",
+      });
+    }
+
+    const topics = new Set();
+    blogs.map((blog: any) => topics.add(blog.topic.toLowerCase()));
+
+    return res.status(200).json({
+      success: true,
+      topics: Array.from(topics),
+    });
+  });
+};
+
+export const getBlog = (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+
+  if (!isValidObjectId(blogId))
+    return res.status(400).json({
+      success: false,
+      msg: "Invalid Blog Id",
+    });
+
+  BlogModel.findOne({ _id: blogId, isPublished: true }).then((blog: any) => {
+    if (!blog) {
+      return res.status(400).json({
+        success: false,
+        msg: "Blog does not exist",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      blog: blog,
+    });
+  });
+};
+
+export const getBlogs = async (req: Request, res: Response) => {
+  BlogModel.find({ isPublished: true })
+    .select("-content")
+    .then((blogs: any) => {
+      return res.status(200).json({
+        success: true,
+        blogs,
+      });
+    })
+    .catch((error: any) => {
+      return res.status(400).json({
+        success: false,
+        msg: "Unknown Error Ocurred getting the requested Blogs",
+      });
+    });
+};
+
+export const updateBlogViewCount = (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+
+  //TODO: Store IP Address and update view count accordingly
+  // console.log(req.clientIp);
+
+  if (!isValidObjectId(blogId))
+    return res.status(400).json({
+      success: false,
+      msg: "Invalid Blog Id",
+    });
+
+  BlogModel.findOne({ _id: blogId, isPublished: true }).then((blog: any) => {
+    if (!blog) {
+      return res.status(400).json({
+        success: false,
+        msg: "Blog does not exist",
+      });
+    }
+
+    blog.viewCount = blog.viewCount + 1;
+    blog
+      .save()
+      .then((_: any) => {
+        return res.status(200).json({
+          success: true,
+          viewCount: blog.viewCount,
+        });
+      })
+      .catch((_: any) => {
+        return res.status(400).json({
+          success: false,
+          msg: "Unknown Error Ocurred updating view count of the blog",
+        });
+      });
+  });
+};
+
+export const getBlogViewCount = (req: Request, res: Response) => {
+  const blogId = req.params.blogId;
+
+  if (!isValidObjectId(blogId))
+    return res.status(400).json({
+      success: false,
+      msg: "Invalid Blog Id",
+    });
+
+  BlogModel.findOne({ _id: blogId, isPublished: true }).then((blog: any) => {
+    if (!blog) {
+      return res.status(400).json({
+        success: false,
+        msg: "Blog does not exist",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      viewCount: blog.viewCount,
+    });
+  });
 };
