@@ -86,11 +86,11 @@ export const addComment = (req: any, res: Response) => {
         });
       }
 
-      const { text } = req.body;
+      const { content } = req.body;
       const comment = {
         blogId,
         authorId,
-        text,
+        content,
         date: Date.now(),
       };
 
