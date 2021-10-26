@@ -17,6 +17,8 @@ import BlogImagesRouter from "./api/v1/routes/BlogImagesRouter";
 import MessageRouter from "./api/v1/routes/MessageRouter";
 import SubscriberRouter from "./api/v1/routes/SubscriberRouter";
 
+import requestIp from "request-ip";
+
 // App Initialization
 const app: Application = express();
 
@@ -24,6 +26,7 @@ const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(requestIp.mw());
 
 // Routes
 app.use("/api/v1/auth", AuthRouter);
