@@ -14,6 +14,10 @@ import RepliesRouter from "./api/v1/routes/RepliesRouter";
 import BioRouter from "./api/v1/routes/BioRouter";
 import ProjectsRouter from "./api/v1/routes/ProjectsRouter";
 import BlogImagesRouter from "./api/v1/routes/BlogImagesRouter";
+import MessageRouter from "./api/v1/routes/MessageRouter";
+import SubscriberRouter from "./api/v1/routes/SubscriberRouter";
+
+import requestIp from "request-ip";
 
 // App Initialization
 const app: Application = express();
@@ -22,6 +26,7 @@ const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(requestIp.mw());
 
 // Routes
 app.use("/api/v1/auth", AuthRouter);
@@ -32,6 +37,8 @@ app.use("/api/v1/blogs", BlogsRouter);
 app.use("/api/v1/comments/:commentId/replies", RepliesRouter);
 app.use("/api/v1/bio", BioRouter);
 app.use("/api/v1/projects", ProjectsRouter);
+app.use("/api/v1/message", MessageRouter);
+app.use("/api/v1/mailing-list/", SubscriberRouter);
 
 app.use(invalidRoute);
 
