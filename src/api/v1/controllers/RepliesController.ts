@@ -48,7 +48,6 @@ export const getReplies = (req: any, res: Response) => {
     .then((replies: any) => {
       return res.status(200).json({
         success: true,
-        commentId,
         replies,
       });
     })
