@@ -24,7 +24,6 @@ export const getUserAccount = (req: any, res: Response) => {
       msg: "User Account Details Fetched Successfully",
       user: {
         _id: user._id,
-        username: user.username,
         email: user.email,
       },
     });
@@ -53,7 +52,6 @@ export const getUserPublicData = (req: any, res: Response) => {
       msg: "User Fetched Successfully",
       user: {
         id: user._id,
-        username: user.username,
         email: user.email,
       },
     });
